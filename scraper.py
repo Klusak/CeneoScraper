@@ -29,22 +29,28 @@ selectors={
         "pros": ["div.review-feature__title--positives ~ div.review-feature__item", None, True],
     }   
 
-
-#product_code=input("Podaj kod produktu: ")
-product_code="104978580"
+product_code=input("Podaj kod produktu: ")
+#product_code="104978580"
 #url="https://www.ceneo.pl/"+product_code+"#tab=reviews"
 #url="https://www.ceneo.pl/{#tab=reviews".format(product_code)
 url=f"https://www.ceneo.pl/{product_code}#tab=reviews"
-response=requests.get(url)
-page_dom= BeautifulSoup(response.text, "html.parser")
-opinions=page_dom.select("div.js_product-review")
 all_opinions=[]
-for opinion in opinions:
-    single_opinion={}
-    for key, value in selectors.items():
-        single_opinion[key]=get_element(opinion,*value)
-    all_opinions.append(single_opinion)
-    #print(opinion["data-entry-id"])
+while (url):
+    print(url)
+    response=requests.get(url)
+    page_dom= BeautifulSoup(response.text, "html.parser")
+    opinions=page_dom.select("div.js_product-review")
+    for opinion in opinions:
+        single_opinion={}
+        for key, value in selectors.items():
+            single_opinion[key]=get_element(opinion,*value)
+        all_opinions.append(single_opinion)
+        #print(opinion["data-entry-id"])
+
+    try:
+        url="https://www.ceneo.pl"+get_element(page_dom,"a.pagination__next","href")
+    except TypeError:
+        url=None
 
 with open (f"./opinions/{product_code}.json", "w", encoding="UTF=8") as jf:
     json.dump(all_opinions, jf,  indent=4, ensure_ascii=False)
